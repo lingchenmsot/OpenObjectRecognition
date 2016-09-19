@@ -37,7 +37,7 @@ void get_svm_detector(const Ptr<SVM>& svm, vector< float > & hog_detector)
 	hog_detector.clear();
 
 	hog_detector.resize(sv.cols + 1);
-	memcpy(&hog_detector[0], sv.ptr(), sv.cols*sizeof(hog_detector[0]));
+	memcpy(&hog_detector[0], sv.ptr(), sv.cols * sizeof(hog_detector[0]));
 	hog_detector[sv.cols] = (float)-rho;
 }
 
@@ -143,7 +143,7 @@ Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorVa
 	int gradientBinSize = 9;
 	float radRangeForOneBin = (float)(CV_PI / (float)gradientBinSize); // dividing 180 into 9 bins, how large (in rad) is one bin?
 
-	// prepare data structure: 9 orientation / gradient strenghts for each cell
+																	   // prepare data structure: 9 orientation / gradient strenghts for each cell
 	int cells_in_x_dir = DIMX / cellSize;
 	int cells_in_y_dir = DIMY / cellSize;
 	float*** gradientStrengths = new float**[cells_in_y_dir];
@@ -200,9 +200,9 @@ Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorVa
 				} // for (all bins)
 
 
-				// note: overlapping blocks lead to multiple updates of this sum!
-				// we therefore keep track how often a cell was updated,
-				// to compute average gradient strengths
+				  // note: overlapping blocks lead to multiple updates of this sum!
+				  // we therefore keep track how often a cell was updated,
+				  // to compute average gradient strengths
 				cellUpdateCounter[celly][cellx]++;
 
 			} // for (all cells)
@@ -212,7 +212,7 @@ Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorVa
 	} // for (all block y pos)
 
 
-	// compute average gradient strengths
+	  // compute average gradient strengths
 	for (celly = 0; celly<cells_in_y_dir; celly++)
 	{
 		for (cellx = 0; cellx<cells_in_x_dir; cellx++)
@@ -257,7 +257,7 @@ Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorVa
 				float maxVecLen = (float)(cellSize / 2.f);
 				float scale = 2.5; // just a visualization scale, to see the lines better
 
-				// compute line coordinates
+								   // compute line coordinates
 				float x1 = mx - dirVecX * currentGradStrength * maxVecLen * scale;
 				float y1 = my - dirVecY * currentGradStrength * maxVecLen * scale;
 				float x2 = mx + dirVecX * currentGradStrength * maxVecLen * scale;
@@ -272,7 +272,7 @@ Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorVa
 	} // for (celly)
 
 
-	// don't forget to free memory allocated by helper data structures!
+	  // don't forget to free memory allocated by helper data structures!
 	for (int y = 0; y<cells_in_y_dir; y++)
 	{
 		for (int x = 0; x<cells_in_x_dir; x++)
@@ -342,11 +342,11 @@ void draw_locations(Mat & img, const vector< Rect > & locations, const Scalar & 
 		vector< Rect >::const_iterator loc = locations.begin();
 		vector< Rect >::const_iterator end = locations.end();
 		for (; loc != end; ++loc)
-		{		
+		{
 			Mat imgtmp = img(*loc);
-			
-		//	imshow("",imgtmp);
-		//	cvSaveImage("temp\\ha.jpg",&imgtmp);
+
+			//	imshow("",imgtmp);
+			//	cvSaveImage("temp\\ha.jpg",&imgtmp);
 
 			rectangle(img, *loc, color, 2);
 		}
@@ -372,14 +372,14 @@ void pictest_it(const Size & size)
 	get_svm_detector(svm, hog_detector);
 	my_hog.setSVMDetector(hog_detector);
 	// Set the people detector.
-	
+
 	// Open the image.
 	img = imread("pic/WP_20160908_19_12_47_Pro.jpg");
 
 	draw = img.clone();
 
 	locations.clear();
-	
+
 	my_hog.detectMultiScale(img, locations);
 	draw_locations(draw, locations, trained);
 
@@ -443,7 +443,7 @@ void test_it(const Size & size)
 
 int main(int argc, char** argv)
 {
-	
+
 	cv::CommandLineParser parser(argc, argv, "{help h|| show help message}"
 		"{pd||pos_dir}{p||pos.lst}{nd||neg_dir}{n||neg.lst}");
 	if (parser.has("help"))
@@ -479,8 +479,8 @@ int main(int argc, char** argv)
 	compute_hog(neg_lst, gradient_lst, Size(96, 160));
 
 	train_svm(gradient_lst, labels);
-	
-	
+
+
 	//pictest_it(Size(96, 160)); // change with your parameters
 
 	return 0;

@@ -11,17 +11,24 @@
 *.userprefs
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
+ObjectDetector/[Dd]ebug/
+ObjectDetector/[Dd]ebugPublic/
+ObjectDetector/[Rr]elease/
+ObjectDetector/[Rr]eleases/
+ObjectDetector/x64/
+ObjectDetector/x86/
+ObjectDetector/bld/
+ObjectDetector/[Bb]in/
+ObjectDetector/[Oo]bj/
+ObjectDetector/[Ll]og/
 
+
+ObjectDetector/ObjectDetector/[Dd]ebug/
+ObjectDetector/ObjectDetector/[Dd]ebugPublic/
+ObjectDetector/ObjectDetector/[Rr]elease/
+ObjectDetector/ObjectDetector/[Rr]eleases/
+ObjectDetector/ObjectDetector/x64/
+ObjectDetector/ObjectDetector/x86/
 # Visual Studio 2015 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
