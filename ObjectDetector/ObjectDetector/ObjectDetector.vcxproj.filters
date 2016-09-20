@@ -15,8 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>资源文件</Filter>
+    <ClInclude Include="training.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="svm_detector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="training.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="svm_detector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
