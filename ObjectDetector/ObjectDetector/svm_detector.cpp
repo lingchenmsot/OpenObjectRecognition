@@ -63,6 +63,7 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & siz
 		exit(-1);
 	}
 	
+	detector.winSize = size;
 	// get detector from trained SVM 
 	get_svm_detector(pSvm, hog_detector);
 	// config detector with SVM hog detector

@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 		parser.printMessage();
 		exit(0);
 	}
-	
+	// train svm
 	if (parser.has("train"))
 	{
 		string pos_dir = parser.get<string>("pd");
@@ -46,8 +46,9 @@ int main(int argc, char** argv)
 
 		exec_train_svm(pos_dir, pos, neg_dir, neg);
 	}
-	if (true)
-	//else if (parser.has("detect"))
+
+	//detect object in picture
+	else if (parser.has("detect"))
 	{
 		string svm_path = parser.get<string>("file");
 #ifdef _DEBUG
@@ -86,6 +87,7 @@ void exec_detect_pic(const string & svm_path)
 	Size default_size(96, 160);
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 
+	namedWindow("detect_result", WINDOW_NORMAL);
 	vector< Rect > locations;
 	for (;;)
 	{
@@ -93,7 +95,7 @@ void exec_detect_pic(const string & svm_path)
 		string img_path;
 		cin >> img_path;
 
-		if (img_path.empty() || img_path == "exit")
+		if (img_path.empty() || img_path == "quit")
 		{
 			break;
 		}
@@ -110,6 +112,7 @@ void exec_detect_pic(const string & svm_path)
 
 		draw_locations(img, locations, Scalar(0, 255, 0));
 
-		imshow("Detect Object", img);
+		imshow("detect_result", img);
+		waitKey(0);
 	}
 }
