@@ -46,13 +46,12 @@ int main(int argc, char** argv)
 
 		exec_train_svm(pos_dir, pos, neg_dir, neg);
 	}
-
 	//detect object in picture
 	else if (parser.has("detect"))
 	{
 		string svm_path = parser.get<string>("file");
 #ifdef _DEBUG
-		svm_path = "g:\\opencvtest\\my_detector.yml";
+		svm_path = "g:\\test.yml";
 #endif
 		if (svm_path.empty())
 		{
@@ -87,7 +86,7 @@ void exec_detect_pic(const string & svm_path)
 	Size default_size(96, 160);
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 
-	namedWindow("detect_result", WINDOW_NORMAL);
+	
 	vector< Rect > locations;
 	for (;;)
 	{
@@ -97,6 +96,7 @@ void exec_detect_pic(const string & svm_path)
 
 		if (img_path.empty() || img_path == "quit")
 		{
+			clog << "Quit" << endl;
 			break;
 		}
 
@@ -107,12 +107,15 @@ void exec_detect_pic(const string & svm_path)
 			cerr << "Can not open image: " << img_path << endl;
 			break;
 		}
-
+		//detect target objs in the img
 		detect(detector, img, locations);
 
+		//draw the locations with Green color Rect
 		draw_locations(img, locations, Scalar(0, 255, 0));
 
+		namedWindow("detect_result", WINDOW_NORMAL);
 		imshow("detect_result", img);
+
 		waitKey(0);
 	}
 }
