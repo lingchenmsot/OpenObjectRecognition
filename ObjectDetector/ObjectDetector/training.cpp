@@ -92,7 +92,7 @@ void sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_lst, con
 	
 	for (; img != end; ++img)
 	{
-		assert(img->cols >= size_x && img->rows >= size->y);
+		assert(img->cols >= size_x && img->rows >= size_y);
 		for (int cur_x = 0; cur_x < img->cols - size_x; cur_x += size_x)
 		{
 			for (int cur_y = 0; cur_y < img->rows - size_y; cur_y += size_y)
@@ -130,7 +130,7 @@ void random_sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_l
 
 	for (; img != end; ++img)
 	{
-		assert(img->cols >= size_x && img->rows >= size->y);
+		assert(img->cols >= size_x && img->rows >= size_y);
 		box.x = img->cols == size_x ? 0 : rand() % (img->cols - size_x);
 		box.y = img->rows == size_y ? 0 : rand() % (img->rows - size_y);
 		Mat roi = (*img)(box);
@@ -237,29 +237,35 @@ Ptr<SVM> train_svm_from(const string & pos_dir, const string & pos, const string
 	vector< int > labels; 
 
 	// load positive images
+	clog << "Loading pos images..." << endl;
 	load_images(pos_dir, pos, pos_lst);
 	labels.assign(pos_lst.size(), +1);
 
 	//load negative images
 	const unsigned int old_size = (unsigned int)labels.size();
+	clog << "loading neg images..." << endl;
 	load_images(neg_dir, neg, full_neg_lst);
 	
+	clog << "sampling neg images..." << endl;
 	float neg_pos_ratio = full_neg_lst.size() / pos_lst.size();
-	if (neg_pos_ratio > NEG_POS_RATIO_THRESHOLD) {
+	random_sample_neg(full_neg_lst, neg_lst, size);
+	/*if (neg_pos_ratio > NEG_POS_RATIO_THRESHOLD) {
 		random_sample_neg(full_neg_lst, neg_lst, size);
 	}
 	else
 	{
 		sample_neg(full_neg_lst, neg_lst, size);
-	}
+	}*/
 	
 	labels.insert(labels.end(), neg_lst.size(), -1);
 	CV_Assert(old_size < labels.size());
 
+	clog << "computing hog..." << endl;
 	//compute hog freature
 	compute_hog(pos_lst, gradient_lst, size);
 	compute_hog(neg_lst, gradient_lst, size);
 
+	clog << "training SVM..." << endl;
 	Ptr<SVM> pSvm = train_svm(gradient_lst, labels);
 
 	return pSvm;

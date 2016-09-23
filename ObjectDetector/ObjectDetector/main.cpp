@@ -32,9 +32,9 @@ int main(int argc, char** argv)
 		neg_dir = "g:\\opencvtest\\neg\\";		
 		neg = "neg.txt";
 #endif
-		pos_dir = "g:\\opencvtest\\poss\\";
+		pos_dir = "g:\\opencvtest\\pos_beer\\";
 		pos = "pos.txt";
-		neg_dir = "g:\\opencvtest\\neg\\";
+		neg_dir = "g:\\opencvtest\\neg_998\\";
 		neg = "neg.txt";
 		if (pos_dir.empty() || pos.empty() || neg_dir.empty() || neg.empty())
 		{
@@ -47,13 +47,13 @@ int main(int argc, char** argv)
 		exec_train_svm(pos_dir, pos, neg_dir, neg);
 	}
 	//detect object in picture
-	else if (parser.has("detect"))
+	else if (true || parser.has("detect"))
 	{
 		string svm_path = parser.get<string>("file");
 #ifdef _DEBUG
-		svm_path = "g:\\detector_with_10000_neg.yml";
+		svm_path = "g:\\detector_neg_poss_1.yml";
 #endif
-		//svm_path = "g:\\ggg.yml";
+		svm_path = "g:\\detector_neg_998_pos_beer.yml";
 		if (svm_path.empty())
 		{
 			cout << "Wrong number of parameters" << endl;
@@ -86,6 +86,7 @@ void exec_detect_pic(const string & svm_path)
 
 	HOGDescriptor detector;
 	Size default_size(96, 160);
+	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 	
 	vector< Rect > locations;
@@ -111,7 +112,7 @@ void exec_detect_pic(const string & svm_path)
 
 		cout << "detecting..." << endl;
 		//detect target objs in the img
-		detect(detector, img, locations);
+		detect(detector, img, locations, false);
 
 		//draw the locations with Green color Rect
 		draw_locations(img, locations, Scalar(0, 255, 0));

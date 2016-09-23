@@ -78,13 +78,21 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win
 }
 
 
-void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations)
+void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations, bool useNMS)
 {
+	assert(locations != NULL);
 	vector < Rect > origin_locations;
 	//use hog + svm to detect
 	detector.detectMultiScale(img, origin_locations);
-	//filter overlap detections
-	non_max_suppression(origin_locations, locations);
+	if (useNMS)
+	{
+		//filter overlap detections
+		non_max_suppression(origin_locations, locations);
+	}
+	else
+	{
+		locations.assign(origin_locations.begin(), origin_locations.end());
+	}
 }
 
 void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path,

@@ -9,7 +9,7 @@ svm_detector.h contains functions to load the trained SVM, config HOG detector a
 void draw_locations(Mat & img, const vector< Rect > & locations, const Scalar & color);
 void get_svm_detector(const Ptr<SVM>& svm, vector< float > & hog_detector);
 bool load_SVM_from_file(Ptr<SVM> & pSVM, const string & file_name);
-void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations);
+void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations, bool useNMS);
 void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win_size, 
 	const Size & block_size, const Size & cell_size, const Size & block_stride, int bins);
 void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path, 
