@@ -1,9 +1,4 @@
-#pragma
-#include "training.h"
-#include "svm_detector.h"
-
-void exec_train_svm(const string & pos_dir, const string & pos, const string & neg_dir, const string & neg);
-void exec_detect_pic(const string & svm_path);
+#include "main.h"
 
 int main(int argc, char** argv)
 {
@@ -17,6 +12,7 @@ int main(int argc, char** argv)
 		"{n      | | neg.lst           }"
 		"{f file | | file to open      }"
 		;
+	
 	CommandLineParser parser(argc, argv, keys);
 	if (parser.has("help"))
 	{
@@ -36,6 +32,10 @@ int main(int argc, char** argv)
 		neg_dir = "g:\\opencvtest\\neg\\";		
 		neg = "neg.txt";
 #endif
+		pos_dir = "g:\\opencvtest\\poss\\";
+		pos = "pos.txt";
+		neg_dir = "g:\\opencvtest\\neg\\";
+		neg = "neg.txt";
 		if (pos_dir.empty() || pos.empty() || neg_dir.empty() || neg.empty())
 		{
 			cout << "Wrong number of parameters." << endl
@@ -51,12 +51,14 @@ int main(int argc, char** argv)
 	{
 		string svm_path = parser.get<string>("file");
 #ifdef _DEBUG
-		svm_path = "g:\\test.yml";
+		svm_path = "g:\\detector_with_10000_neg.yml";
 #endif
+		//svm_path = "g:\\ggg.yml";
 		if (svm_path.empty())
 		{
 			cout << "Wrong number of parameters" << endl;
 			cout << "Usage: ObjectDetector -d -f=svm.yml" << endl;
+			exit(-1);
 		}
 
 		exec_detect_pic(svm_path);
@@ -68,7 +70,7 @@ int main(int argc, char** argv)
 void exec_train_svm(const string & pos_dir, const string & pos, const string & neg_dir, const string & neg)
 {
 	cout << "Start training svm, pls wait..." << endl;
-	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg);
+	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg, Size(96, 160));
 	cout << "DONE!" << endl;
 
 	string file_path;
@@ -85,19 +87,18 @@ void exec_detect_pic(const string & svm_path)
 	HOGDescriptor detector;
 	Size default_size(96, 160);
 	build_hog_detector_from_svm(detector, svm_path, default_size);
-
 	
 	vector< Rect > locations;
 	for (;;)
 	{
-		cout << "Input the tmage path needed to detect(input \"quit\" to quit): ";
+		cout << "Input the image path needed to detect(input \"quit\" to quit): ";
 		string img_path;
 		cin >> img_path;
 
 		if (img_path.empty() || img_path == "quit")
 		{
 			clog << "Quit" << endl;
-			break;
+			exit(-1);
 		}
 
 		locations.clear();
@@ -107,11 +108,14 @@ void exec_detect_pic(const string & svm_path)
 			cerr << "Can not open image: " << img_path << endl;
 			break;
 		}
+
+		cout << "detecting..." << endl;
 		//detect target objs in the img
 		detect(detector, img, locations);
 
 		//draw the locations with Green color Rect
 		draw_locations(img, locations, Scalar(0, 255, 0));
+		cout << "complete!" << endl;
 
 		namedWindow("detect_result", WINDOW_NORMAL);
 		imshow("detect_result", img);
