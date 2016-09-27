@@ -124,3 +124,45 @@ void exec_detect_pic(const string & svm_path)
 		waitKey(0);
 	}
 }
+
+void get_hard_examples(const string & output_dir, const string & svm_path, const string & dir,
+	const string & names)
+{
+	HOGDescriptor detector;
+	Size default_size(96, 160);
+	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
+	build_hog_detector_from_svm(detector, svm_path, default_size);
+
+	clog << "loading images from: " << dir << endl;
+	vector < Mat > imgs;
+	load_images(dir, names, imgs);
+
+	clog << "starting to detecting..." << endl;
+	int count = 0;
+	vector< Rect > locations;
+	for (vector< Mat >::const_iterator it = imgs.begin(); it != imgs.end(); ++it)
+	{
+		locations.clear();
+		detect(detector, *it, locations, false);
+		for (vector< Rect >::iterator rect = locations.begin(); rect != locations.end(); ++rect)
+		{
+			//keep the rect stay in the origin image
+			rect->x = rect->x < 0 ? 0 : rect->x;
+			rect->y = rect->y < 0 ? 0 : rect->y;
+			if (rect->x + rect->width > it->cols)
+				rect->width = it->cols - rect->x;
+			if (rect->y + rect->height > it->rows)
+				rect->height = it->rows - rect->y;
+			//crop false detected img from the origin
+			Mat hard_example = (*it)(*rect);
+			//resize img to default size
+			resize(hard_example, hard_example, default_size);
+
+			//write the img to file
+			string file_name = output_dir + "hard_" + (++count) + ".jpg";
+			clog << "writing hard example image to : " << file_name << endl;
+			imwrite(file_name, hard_example);
+		}
+		
+	}
+}

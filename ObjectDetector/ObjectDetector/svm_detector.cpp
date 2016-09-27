@@ -77,7 +77,13 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win
 	detector.setSVMDetector(hog_detector);
 }
 
-
+/*
+* Use configed detector to detect targets in img, results will be put in locations.
+* detector: configed HOGDescriptor
+* img: source image
+* locations: detection results
+* useNMS: using NMS after detection
+*/
 void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations, bool useNMS)
 {
 	assert(locations != NULL);
@@ -95,6 +101,9 @@ void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & location
 	}
 }
 
+/*
+* build a HOGDescripter detector from svm file with parameters.
+*/
 void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path,
 	const Size & win_size, const Size & block_size, const Size & cell_size, const Size & block_stride, int bins)
 {

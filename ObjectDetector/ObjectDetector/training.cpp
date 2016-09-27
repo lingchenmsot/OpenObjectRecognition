@@ -173,7 +173,7 @@ void convert_to_ml(const std::vector< cv::Mat > & train_samples, cv::Mat& trainD
 }
 
 /*
-* Train SVM use training set [gradient_file, labels]
+* Train SVM with training set [gradient_file, labels]
 * For positve case, label equals 1, otherwise label equals -1.
 */
 Ptr<SVM> train_svm(const vector< Mat > & gradient_lst, const vector< int > & labels)
@@ -271,6 +271,9 @@ Ptr<SVM> train_svm_from(const string & pos_dir, const string & pos, const string
 	return pSvm;
 }
 
+/*
+* visualize the hog feature in the origin image, only used to debug
+*/
 Mat get_hogdescriptor_visu(const Mat& color_origImg, vector<float>& descriptorValues, const Size & size)
 {
 	const int DIMX = size.width;
