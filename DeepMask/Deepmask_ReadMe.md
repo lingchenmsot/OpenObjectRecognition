@@ -53,6 +53,7 @@ deepmask github网址：
    
    - 本人安装的是CUDA 7.5版本。　使用nvcc -v：测试版本
    - 完成后测试是否安装成功，编译Sample：
+   
    > - cd usr/local/cuda-7.5/samples
    
    > - sudo make
