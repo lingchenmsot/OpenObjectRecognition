@@ -86,7 +86,6 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win
 */
 void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations, bool useNMS)
 {
-	assert(locations != NULL);
 	vector < Rect > origin_locations;
 	//use hog + svm to detect
 	detector.detectMultiScale(img, origin_locations);
