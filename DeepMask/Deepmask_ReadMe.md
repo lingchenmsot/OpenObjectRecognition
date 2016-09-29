@@ -87,7 +87,7 @@ deepmask github网址：
       - 安装命令：luarocks install cutorch
    - cudnn：
    
-   > - 下载地址：https://developer.nvidia.com/cudnn 这个网址下载cudnn的库，需要对应CUDA的版本。
+   > - 下载地址：https://developer.nvidia.com/cudnn 下载cudnn的库，需要与CUDA的版本相对应。
    
    > - 我下载的是：Download cuDNN v5.1 (August 10,2016), for CUDA 7.5 -> cuDNN v5.1 Library for Linux这个链接的内容，下载得到的文件名称是：cudnn-7.5-linux-x64-v5.1.tgz
    
