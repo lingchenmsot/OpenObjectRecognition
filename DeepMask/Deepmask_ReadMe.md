@@ -8,7 +8,7 @@ deepmask github网址：
 - linux 或者 macos操作系统
   - 本人采用的是ubuntu 14.04 LTS系统
   
-   ![image](https://github.com/lingchenmsot/OpenObjectRecognition/blob/master/DeepMask/Markdown_images/OS_GPU.png?raw=true)
+      ![image](https://github.com/lingchenmsot/OpenObjectRecognition/blob/master/DeepMask/Markdown_images/OS_GPU.png?raw=true)
 
 ---
 
@@ -144,11 +144,11 @@ deepmask github网址：
 
          - 下载的内容包括：
 
-      > 2014 Train/Val object instances [158MB]
+         > 2014 Train/Val object instances [158MB]
 
-      > 2014 Training images [80k/13GB]
+         > 2014 Training images [80k/13GB]
 
-      > 2014 Testing images [40k/6.2GB]
+         > 2014 Testing images [40k/6.2GB]
 
          - 下载完毕之后可以根据deepmask github上的教程，放置在相应位置
 
