@@ -7,6 +7,7 @@ deepmask github网址：
 ## 系统要求
 - linux 或者 macos操作系统
   - 本人采用的是ubuntu 14.04 LTS系统
+  
 ![image](https://github.com/lingchenmsot/OpenObjectRecognition/blob/master/DeepMask/Markdown_images/OS_GPU.png?raw=true)
 
 ---
@@ -73,8 +74,11 @@ deepmask github网址：
       - 并没有尝试安装TORCH_LUA_VERSION=LUA52 ./install.sh这个命令
       
    - 测试是否安装成功：
+   
     ![image](https://github.com/lingchenmsot/OpenObjectRecognition/blob/master/DeepMask/Markdown_images/th.png?raw=true)
+    
    - 查看已经安装的包的命令：
+   
    > luarocks list
 
 3. **Deepmask依赖的torch的包**
