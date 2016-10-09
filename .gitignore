@@ -191,6 +191,8 @@ csx/
 # Microsoft Azure Emulator
 ecf/
 rcf/
+!DeepMask/data/*.png
+DeepMask/pretrained/
 
 # Windows Store app package directories and files
 AppPackages/
