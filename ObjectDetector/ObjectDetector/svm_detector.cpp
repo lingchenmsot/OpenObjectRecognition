@@ -53,8 +53,10 @@ bool load_SVM_from_file(Ptr<SVM> & pSVM, const string & file_name)
 
 /*
 * config hog detector with trained SVM and window size
+* winSize, scale, winStride(step, size), padding, finalThreshold, useMeanShiftGrouping
 */
-void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & size)
+void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win_size,
+	const Size & block_size, const Size & cell_size, const Size & block_stride, int bins)
 {
 	vector< float > hog_detector;
 	if (pSvm.empty())
@@ -63,22 +65,30 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & siz
 		exit(-1);
 	}
 	
-	detector.winSize = size;
+	detector.winSize = win_size;
+	detector.blockSize = block_size;
+	detector.cellSize = cell_size;
+	detector.blockStride = block_stride;
+	detector.nbins = bins;
+
 	// get detector from trained SVM 
 	get_svm_detector(pSvm, hog_detector);
 	// config detector with SVM hog detector
 	detector.setSVMDetector(hog_detector);
-
-	detector.winSize = size;
 }
 
 
 void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations)
 {
-	detector.detectMultiScale(img, locations);
+	vector < Rect > origin_locations;
+	//use hog + svm to detect
+	detector.detectMultiScale(img, origin_locations);
+	//filter overlap detections
+	non_max_suppression(origin_locations, locations);
 }
 
-void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path, const Size & size)
+void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path,
+	const Size & win_size, const Size & block_size, const Size & cell_size, const Size & block_stride, int bins)
 {
 	Ptr<SVM> pSvm;
 	if (!load_SVM_from_file(pSvm, svm_file_path))
@@ -87,5 +97,54 @@ void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_fi
 		exit(-1);
 	}
 
-	config_detector(detector, pSvm, size);
+	config_detector(detector, pSvm, win_size, block_size, cell_size, block_stride, bins);
+}
+
+/*
+* Non max suppression to filter overlap detections.
+* See: https://github.com/Nuzhny007/Non-Maximum-Suppression/blob/master/main.cpp
+*/
+void non_max_suppression(const vector< Rect > & srcRects, vector< Rect > & resRects, float overlap_threshold)
+{
+	const size_t size = srcRects.size();
+	if (size == 0)
+		return;
+
+	// sort the rects by the bottom-right y coordinate of the Rect
+	multimap<int, size_t> idxs;
+	for (size_t i = 0; i < size; ++i)
+	{
+		idxs.insert(pair<int, size_t>(srcRects[i].br().y, i));
+	}
+
+	// keep looping while some indexes still remain in the indexes list
+	while (idxs.size() > 0)
+	{
+		//grab the last index in the sorted rect list and add the rect to pick list
+		auto last = --end(idxs);
+		const Rect & rect1 = srcRects[last->second];
+		resRects.push_back(rect1);
+		
+		//erase the last
+		idxs.erase(last);
+
+		for (auto pos = begin(idxs); pos != end(idxs); )
+		{
+			const Rect & rect2 = srcRects[pos->second];
+
+			float intArea = (rect1 & rect2).area();
+			float unionArea = rect1.area() + rect2.area() - intArea;
+			float overlap = intArea / unionArea;
+
+			//if there is sufficent overlap, suppress the current bounding box.
+			if (overlap > overlap_threshold)
+			{
+				pos = idxs.erase(pos);
+			}
+			else
+			{
+				++pos;
+			}
+		}
+	}
 }
