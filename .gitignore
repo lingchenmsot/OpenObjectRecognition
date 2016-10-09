@@ -1,5 +1,7 @@
 # modified to ignore the coco images and annotations
-DeepMask/data/*.zip
+DeepMask/data/annotations/
+DeepMask/data/train2014/
+DeepMask/data/val2014/
 
 # Modified to ignore the pretrained floder
 DeepMask/pretrained/
