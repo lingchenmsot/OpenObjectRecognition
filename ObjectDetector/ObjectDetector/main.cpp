@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 	{
 		string svm_path = parser.get<string>("file");
 #ifdef _DEBUG
-		svm_path = "g:\\detector_neg_poss_1.yml";
+		svm_path = "g:\\werwe.yml";
 #endif
 		if (svm_path.empty())
 		{
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 void exec_train_svm(const string & pos_dir, const string & pos, const string & neg_dir, const string & neg)
 {
 	cout << "Start training svm, pls wait..." << endl;
-	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg, Size(96, 160));
+	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg, Size(80, 200));
 	cout << "DONE!" << endl;
 
 	string file_path;
@@ -80,7 +80,7 @@ void exec_detect_pic(const string & svm_path)
 {
 
 	HOGDescriptor detector;
-	Size default_size(96, 160);
+	Size default_size(80, 200);
 	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 	
@@ -107,7 +107,7 @@ void exec_detect_pic(const string & svm_path)
 
 		cout << "detecting..." << endl;
 		//detect target objs in the img
-		detect(detector, img, locations, true);
+		detect(detector, img, locations, true, Size(8, 16), Size(30, 30), 1.10);
 
 		//draw the locations with Green color Rect
 		draw_locations(img, locations, Scalar(0, 255, 0));
@@ -124,7 +124,7 @@ void get_hard_examples(const string & output_dir, const string & svm_path, const
 	const string & names)
 {
 	HOGDescriptor detector;
-	Size default_size(96, 160);
+	Size default_size(80, 200);
 	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 
@@ -171,7 +171,7 @@ void get_hard_examples(const string & output_dir, const string & svm_path, const
 			//write the img to file
 			++count;
 			stringstream ss;
-			ss << output_dir + "hard_" <<  count << ".jpg";
+			ss << output_dir + line.substr(0, line.size() - 4) + "_m2_hard_" <<  count << ".jpg";
 			string file_name;
 			ss >> file_name;
 			clog << "writing hard example image to : " << file_name << endl;

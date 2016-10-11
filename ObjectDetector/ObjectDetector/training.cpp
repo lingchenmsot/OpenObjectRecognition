@@ -33,13 +33,9 @@ void load_images(const string & prefix, const string & filename, vector< Mat > &
 		// invalid image, just skip it.
 		if (img.empty()) 
 			continue;
-		
-#ifdef _DEBUG
-		imshow("image", img);
-		waitKey(10);
-#endif
-		img_lst.push_back(img.clone());
+		img_lst.push_back(img);
 	}
+	file.close();
 }
 
 /*
@@ -89,14 +85,16 @@ void sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_lst, con
 
 	vector< Mat >::const_iterator img = full_neg_lst.begin();
 	vector< Mat >::const_iterator end = full_neg_lst.end();
-	
+	int count = 0;
 	for (; img != end; ++img)
 	{
+		if (count > 1500) break;
 		assert(img->cols >= size_x && img->rows >= size_y);
 		for (int cur_x = 0; cur_x < img->cols - size_x; cur_x += size_x)
 		{
 			for (int cur_y = 0; cur_y < img->rows - size_y; cur_y += size_y)
 			{
+				++count;
 				box.x = cur_x;
 				box.y = cur_y;
 				Mat roi = (*img)(box);
@@ -130,7 +128,7 @@ void random_sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_l
 
 	for (; img != end; ++img)
 	{
-		assert(img->cols >= size_x && img->rows >= size_y);
+		if (img->cols < size_x || img->rows < size_y) continue;
 		box.x = img->cols == size_x ? 0 : rand() % (img->cols - size_x);
 		box.y = img->rows == size_y ? 0 : rand() % (img->rows - size_y);
 		Mat roi = (*img)(box);
@@ -178,23 +176,22 @@ void convert_to_ml(const std::vector< cv::Mat > & train_samples, cv::Mat& trainD
 */
 Ptr<SVM> train_svm(const vector< Mat > & gradient_lst, const vector< int > & labels)
 {
-	Mat train_data;
-	convert_to_ml(gradient_lst, train_data);
+	Mat train_mat;
+	convert_to_ml(gradient_lst, train_mat);
 
 	clog << "Start training...";
-	Ptr<SVM> svm = SVM::create();
-	// Default values to train SVM
-	svm->setCoef0(0.0);
-	svm->setDegree(3);
-	svm->setTermCriteria(TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 1000, 1e-3));
-	svm->setGamma(0);
-	svm->setKernel(SVM::LINEAR);
-	svm->setNu(0.5);
-	svm->setP(0.1); // for EPSILON_SVR, epsilon in loss function?
-	svm->setC(0.01); // From paper, soft classifier
-	svm->setType(SVM::EPS_SVR); // C_SVC; // EPSILON_SVR; // may be also NU_SVR; // do regression task
 
-	svm->train(train_data, ROW_SAMPLE, Mat(labels));
+	Ptr<SVM> svm = SVM::create();
+	// parameters to train SVM
+	svm->setTermCriteria(TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 1000, 1e-3));
+	svm->setGamma(1);
+	svm->setKernel(SVM::RBF);
+	svm->setC(0.01);
+	svm->setType(SVM::C_SVC); 
+
+	Ptr<TrainData> train_data = TrainData::create(train_mat, ROW_SAMPLE, labels);
+	svm->trainAuto(train_data, ROW_SAMPLE);
+
 	clog << "...[done]" << endl;
 	
 
@@ -248,6 +245,7 @@ Ptr<SVM> train_svm_from(const string & pos_dir, const string & pos, const string
 	
 	clog << "sampling neg images..." << endl;
 	float neg_pos_ratio = full_neg_lst.size() / pos_lst.size();
+	//sample_neg(full_neg_lst, neg_lst, size);
 	random_sample_neg(full_neg_lst, neg_lst, size);
 	/*if (neg_pos_ratio > NEG_POS_RATIO_THRESHOLD) {
 		random_sample_neg(full_neg_lst, neg_lst, size);
