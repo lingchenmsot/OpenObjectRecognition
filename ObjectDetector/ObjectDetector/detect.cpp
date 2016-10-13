@@ -1,4 +1,4 @@
-#include "svm_detector.h"
+#include "detect.h"
 
 /*
 * draw rectangles which included in locations on img with color  
@@ -29,10 +29,13 @@ void get_svm_detector(const Ptr<SVM>& svm, vector< float > & hog_detector)
 	Mat alpha, svidx;
 	double rho = svm->getDecisionFunction(0, alpha, svidx);
 
-	CV_Assert(alpha.total() == 1 && svidx.total() == 1 && sv_total == 1);
+	/*
+				CV_Assert(alpha.total() == 1 && svidx.total() == 1 && sv_total == 1);
 	CV_Assert((alpha.type() == CV_64F && alpha.at<double>(0) == 1.) ||
 		(alpha.type() == CV_32F && alpha.at<float>(0) == 1.f));
 	CV_Assert(sv.type() == CV_32F);
+	*/
+
 	hog_detector.clear();
 
 	hog_detector.resize(sv.cols + 1);

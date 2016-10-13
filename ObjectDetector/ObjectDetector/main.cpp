@@ -1,5 +1,6 @@
 ﻿#include "main.h"
 
+
 int main(int argc, char** argv)
 {
 	const string keys = 
@@ -11,6 +12,8 @@ int main(int argc, char** argv)
 		"{nd     | | neg_dir           }"
 		"{n      | | neg.lst           }"
 		"{f file | | file to open      }"
+		"{w width| 96 | width of pos sample}"
+		"{l length |160 | length of pos sample}"
 		;
 	
 	CommandLineParser parser(argc, argv, keys);
@@ -19,53 +22,58 @@ int main(int argc, char** argv)
 		parser.printMessage();
 		exit(0);
 	}
+	
+	int width = parser.get<int>("w");
+	int length = parser.get<int>("l");
+	Size size(width, length);
 	// train svm
-	if (parser.has("train"))
+	if (true || parser.has("train"))
 	{
 		string pos_dir = parser.get<string>("pd");
 		string pos = parser.get<string>("p");
 		string neg_dir = parser.get<string>("nd");
 		string neg = parser.get<string>("n");
-#ifdef _DEBUG
+		
+		
 		pos_dir = "g:\\opencvtest\\poss\\";
-		pos = "pos.txt";		
-		neg_dir = "g:\\opencvtest\\neg\\";		
+		pos = "pos.txt";
+		neg_dir = "e:\\images\\neg\\";
+		//neg_dir = "E:\\Image\\RedKele96x160\\";
 		neg = "neg.txt";
-#endif
+		
 		if (pos_dir.empty() || pos.empty() || neg_dir.empty() || neg.empty())
 		{
 			cout << "Wrong number of parameters." << endl
-				<< "Usage: " << "ObjectDetector" << "-t --pd=pos_dir -p=pos.lst --nd=neg_dir -n=neg.lst" << endl
-				<< "example: " << "ObjectDetector" << "-t --pd=/INRIA_dataset/ -p=Train/pos.lst --nd=/INRIA_dataset/ -n=Train/neg.lst" << endl;
+				<< "Usage: " << "ObjectDetector" << "-t --pd=pos_dir -p=pos.lst --nd=neg_dir -n=neg.lst -w=width -l=length" << endl
+				<< "example: " << "ObjectDetector" 
+				<< "-t --pd=/INRIA_dataset/ -p=Train/pos.lst --nd=/INRIA_dataset/ -n=Train/neg.lst -w=96 -l=160" << endl;
 			exit(-1);
 		}
 
-		exec_train_svm(pos_dir, pos, neg_dir, neg);
+		exec_train_svm(pos_dir, pos, neg_dir, neg, size);
 	}
 	//detect object in picture
 	else if (parser.has("detect"))
 	{
 		string svm_path = parser.get<string>("file");
-#ifdef _DEBUG
-		svm_path = "g:\\werwe.yml";
-#endif
+		
 		if (svm_path.empty())
 		{
 			cout << "Wrong number of parameters" << endl;
-			cout << "Usage: ObjectDetector -d -f=svm.yml" << endl;
+			cout << "Usage: ObjectDetector -d -f=svm.yml -w=96 -l=160" << endl;
 			exit(-1);
 		}
 
-		exec_detect_pic(svm_path);
+		exec_detect_pic(svm_path, size);
 	}
 	
 	return 0;
 }
 
-void exec_train_svm(const string & pos_dir, const string & pos, const string & neg_dir, const string & neg)
+void exec_train_svm(const string & pos_dir, const string & pos, const string & neg_dir, const string & neg, const Size & cell_size)
 {
 	cout << "Start training svm, pls wait..." << endl;
-	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg, Size(80, 200));
+	Ptr<SVM> pSvm = train_svm_from(pos_dir, pos, neg_dir, neg, cell_size);
 	cout << "DONE!" << endl;
 
 	string file_path;
@@ -76,11 +84,11 @@ void exec_train_svm(const string & pos_dir, const string & pos, const string & n
 }
 
 
-void exec_detect_pic(const string & svm_path)
+void exec_detect_pic(const string & svm_path, const Size & cell_size)
 {
 
 	HOGDescriptor detector;
-	Size default_size(80, 200);
+	Size default_size = cell_size;
 	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
 	build_hog_detector_from_svm(detector, svm_path, default_size);
 	
@@ -121,12 +129,11 @@ void exec_detect_pic(const string & svm_path)
 }
 
 void get_hard_examples(const string & output_dir, const string & svm_path, const string & dir,
-	const string & names)
+	const string & names, Size& size)
 {
 	HOGDescriptor detector;
-	Size default_size(80, 200);
 	clog << "loading SVM: " << svm_path << ", and building detector..." << endl;
-	build_hog_detector_from_svm(detector, svm_path, default_size);
+	build_hog_detector_from_svm(detector, svm_path, size);
 
 	clog << "starting to detecting..." << endl;
 	int count = 0;
@@ -166,12 +173,12 @@ void get_hard_examples(const string & output_dir, const string & svm_path, const
 			//crop false detected img from the origin
 			Mat hard_example = img(*rect);
 			//resize img to default size
-			resize(hard_example, hard_example, default_size);
+			resize(hard_example, hard_example, size);
 
 			//write the img to file
 			++count;
 			stringstream ss;
-			ss << output_dir + line.substr(0, line.size() - 4) + "_m2_hard_" <<  count << ".jpg";
+			ss << output_dir + line.substr(0, line.find_last_of('.')) + "_hard_" <<  count << ".png";
 			string file_name;
 			ss >> file_name;
 			clog << "writing hard example image to : " << file_name << endl;

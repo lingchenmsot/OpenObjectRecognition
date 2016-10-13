@@ -1,4 +1,4 @@
-#include "training.h"
+#include "train.h"
 
 /*
 * Load images to Mat vector
@@ -133,10 +133,6 @@ void random_sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_l
 		box.y = img->rows == size_y ? 0 : rand() % (img->rows - size_y);
 		Mat roi = (*img)(box);
 		neg_lst.push_back(roi.clone());
-#ifdef _DEBUG
-		imshow("img", roi.clone());
-		waitKey(10);
-#endif
 	}
 }
 
@@ -184,14 +180,19 @@ Ptr<SVM> train_svm(const vector< Mat > & gradient_lst, const vector< int > & lab
 	Ptr<SVM> svm = SVM::create();
 	// parameters to train SVM
 	svm->setTermCriteria(TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 1000, 1e-3));
-	svm->setGamma(1);
-	svm->setKernel(SVM::RBF);
-	svm->setC(0.01);
-	svm->setType(SVM::C_SVC); 
-
+	svm->setKernel(SVM::LINEAR);
+	svm->setP(0.1); // for EPSILON_SVR, epsilon in loss function?
+	svm->setC(0.01); // From paper, soft classifier
+	svm->setType(SVM::EPS_SVR);
+	/*
 	Ptr<TrainData> train_data = TrainData::create(train_mat, ROW_SAMPLE, labels);
-	svm->trainAuto(train_data, ROW_SAMPLE);
-
+	clog << train_data->getNAllVars() << ", " << train_data->getNSamples() << ", " << train_data->getNTrainSamples() << endl;
+	ParamGrid c_grid = ParamGrid(1e-10, 1e+10, 10);
+	ParamGrid p_grid = ParamGrid(1e-2, 1e+3, 10);
+	svm->trainAuto(train_data, 2, c_grid, SVM::getDefaultGrid(SVM::GAMMA), p_grid, 
+		SVM::getDefaultGrid(SVM::NU), SVM::getDefaultGrid(SVM::COEF), SVM::getDefaultGrid(SVM::DEGREE), true);
+	*/
+	svm->train(train_mat, ROW_SAMPLE, labels);
 	clog << "...[done]" << endl;
 	
 
