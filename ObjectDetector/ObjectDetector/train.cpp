@@ -1,11 +1,11 @@
 #include "train.h"
 
 /*
-* Load images to Mat vector
+* Get all image pathes
 * prefix: the prefix of the directory.
 * filename: the text file containing the fileName of each image.
 */
-void load_images(const string & prefix, const string & filename, vector< Mat > & img_lst)
+void get_images_path(const string & prefix, const string & filename, vector< string > & path_lst)
 {
 	string line;
 	ifstream file;
@@ -23,19 +23,63 @@ void load_images(const string & prefix, const string & filename, vector< Mat > &
 	{
 		getline(file, line);
 		// no more file to read
-		if (line.empty()) 
+		if (line.empty())
 		{
 			end_of_parsing = true;
 			break;
 		}
+		path_lst.push_back(prefix + line);
+	}
+	file.close();
+}
+
+void load_and_sample_negs(const string & prefix, const string & filename, const Size & size, int max_count, bool rand, vector< Mat > & img_lst)
+{
+	vector< Mat > tmp_lst;
+	vector< string > path_lst;
+
+	get_images_path(prefix, filename, path_lst);
+	for (vector< string >::iterator it = path_lst.begin(); it != path_lst.end(); ++it)
+	{
 		// load the image
-		Mat img = imread((prefix + line).c_str()); 
+		Mat img = imread((*it).c_str());
 		// invalid image, just skip it.
-		if (img.empty()) 
+		if (img.empty())
+			continue;
+
+		if (rand) 
+		{
+			random_sample_neg(img, tmp_lst, size);
+		}
+		else
+		{
+			sample_neg(img, tmp_lst, size);
+		}
+		if (tmp_lst.size() > max_count) break;
+	}
+
+	img_lst.insert(img_lst.end(), tmp_lst.begin(), tmp_lst.end());
+}
+
+/*
+* Load images to Mat vector
+* prefix: the prefix of the directory.
+* filename: the text file containing the fileName of each image.
+*/
+void load_images(const string & prefix, const string & filename, vector< Mat > & img_lst)
+{
+	vector< string > path_lst;
+	get_images_path(prefix, filename, path_lst);
+
+	for (vector< string >::iterator it = path_lst.begin(); it != path_lst.end(); ++it)
+	{
+		// load the image
+		Mat img = imread((*it).c_str());
+		// invalid image, just skip it.
+		if (img.empty())
 			continue;
 		img_lst.push_back(img);
 	}
-	file.close();
 }
 
 /*
@@ -70,70 +114,53 @@ void compute_hog(const vector< Mat > & img_lst, vector< Mat > & gradient_lst, co
 
 /*
 * Sample rect small images from full_neg_lst
-* full_neg_lst: full negative image list
+* origin: full negative image
 * neg_list: sampled rect image list
 * size: the sample size
 */
-void sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_lst, const Size & size)
+void sample_neg(const Mat & origin, vector< Mat > & neg_lst, const Size & size)
 {
 	Rect box;
-	box.width = size.width;
-	box.height = size.height;
+	const int size_x = size.width;
+	const int size_y = size.height;
+	box.width = size_x;
+	box.height = size_y;
 
-	const int size_x = box.width;
-	const int size_y = box.height;
+	if (origin.cols < size_x || origin.rows < size_y) return;
 
-	vector< Mat >::const_iterator img = full_neg_lst.begin();
-	vector< Mat >::const_iterator end = full_neg_lst.end();
-	int count = 0;
-	for (; img != end; ++img)
+	for (int cur_x = 0; cur_x < origin.cols - size_x; cur_x += size_x)
 	{
-		if (count > 1500) break;
-		assert(img->cols >= size_x && img->rows >= size_y);
-		for (int cur_x = 0; cur_x < img->cols - size_x; cur_x += size_x)
+		for (int cur_y = 0; cur_y < origin.rows - size_y; cur_y += size_y)
 		{
-			for (int cur_y = 0; cur_y < img->rows - size_y; cur_y += size_y)
-			{
-				++count;
-				box.x = cur_x;
-				box.y = cur_y;
-				Mat roi = (*img)(box);
-				neg_lst.push_back(roi.clone());
-#ifdef _DEBUG
-				imshow("img", roi.clone());
-				waitKey(10);
-#endif
-			}
+			box.x = cur_x;
+			box.y = cur_y;
+			Mat roi = origin(box);
+			neg_lst.push_back(roi.clone());
 		}
 	}
+
 }
 
 /*
 * Randomly sample rect small images from full_neg_lst
-* full_neg_lst: full negative image list
+* origin: full negative image
 * neg_list: sampled rect image list
 * size: the sample size
 */
-void random_sample_neg(const vector< Mat > & full_neg_lst, vector< Mat > & neg_lst, const Size & size)
+void random_sample_neg(const Mat & origin, vector< Mat > & neg_lst, const Size & size)
 {
 	Rect box;
-	box.width = size.width;
-	box.height = size.height;
+	const int size_x = size.width;
+	const int size_y = size.height;
+	box.width = size_x;
+	box.height = size_y;
 
-	const int size_x = box.width;
-	const int size_y = box.height;
+	if (origin.cols < size_x || origin.rows < size_y) return;
 
-	vector< Mat >::const_iterator img = full_neg_lst.begin();
-	vector< Mat >::const_iterator end = full_neg_lst.end();
-
-	for (; img != end; ++img)
-	{
-		if (img->cols < size_x || img->rows < size_y) continue;
-		box.x = img->cols == size_x ? 0 : rand() % (img->cols - size_x);
-		box.y = img->rows == size_y ? 0 : rand() % (img->rows - size_y);
-		Mat roi = (*img)(box);
-		neg_lst.push_back(roi.clone());
-	}
+	box.x = origin.cols == size_x ? 0 : rand() % (origin.cols - size_x);
+	box.y = origin.rows == size_y ? 0 : rand() % (origin.rows - size_y);
+	Mat roi = origin(box);
+	neg_lst.push_back(roi.clone());
 }
 
 /*
@@ -227,7 +254,6 @@ Ptr<SVM> train_svm_from(const string & pos_dir, const string & pos, const string
 	//positve case image list
 	vector< Mat > pos_lst;
 	//negative case image list
-	vector< Mat > full_neg_lst;
 	vector< Mat > neg_lst;
 	//gradient list of all training images
 	vector< Mat > gradient_lst; 
@@ -241,21 +267,9 @@ Ptr<SVM> train_svm_from(const string & pos_dir, const string & pos, const string
 
 	//load negative images
 	const unsigned int old_size = (unsigned int)labels.size();
-	clog << "loading neg images..." << endl;
-	load_images(neg_dir, neg, full_neg_lst);
-	
-	clog << "sampling neg images..." << endl;
-	float neg_pos_ratio = full_neg_lst.size() / pos_lst.size();
-	//sample_neg(full_neg_lst, neg_lst, size);
-	random_sample_neg(full_neg_lst, neg_lst, size);
-	/*if (neg_pos_ratio > NEG_POS_RATIO_THRESHOLD) {
-		random_sample_neg(full_neg_lst, neg_lst, size);
-	}
-	else
-	{
-		sample_neg(full_neg_lst, neg_lst, size);
-	}*/
-	
+	clog << "loading and sampling neg images..." << endl;
+	load_and_sample_negs(neg_dir, neg, size, 10000, true, neg_lst);
+
 	labels.insert(labels.end(), neg_lst.size(), -1);
 	CV_Assert(old_size < labels.size());
 

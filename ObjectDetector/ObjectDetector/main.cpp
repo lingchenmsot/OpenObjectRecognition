@@ -27,20 +27,21 @@ int main(int argc, char** argv)
 	int length = parser.get<int>("l");
 	Size size(width, length);
 	// train svm
-	if (true || parser.has("train"))
+	if (parser.has("train"))
 	{
 		string pos_dir = parser.get<string>("pd");
 		string pos = parser.get<string>("p");
 		string neg_dir = parser.get<string>("nd");
 		string neg = parser.get<string>("n");
 		
-		
+		/*
 		pos_dir = "g:\\opencvtest\\poss\\";
 		pos = "pos.txt";
 		neg_dir = "e:\\images\\neg\\";
 		//neg_dir = "E:\\Image\\RedKele96x160\\";
 		neg = "neg.txt";
-		
+		*/
+
 		if (pos_dir.empty() || pos.empty() || neg_dir.empty() || neg.empty())
 		{
 			cout << "Wrong number of parameters." << endl
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
 	else if (parser.has("detect"))
 	{
 		string svm_path = parser.get<string>("file");
-		
+		//svm_path = "g:\\l_m.yml";
 		if (svm_path.empty())
 		{
 			cout << "Wrong number of parameters" << endl;
