@@ -1,4 +1,4 @@
-#include "svm_detector.h"
+#include "detect.h"
 
 /*
 * draw rectangles which included in locations on img with color  
@@ -29,10 +29,13 @@ void get_svm_detector(const Ptr<SVM>& svm, vector< float > & hog_detector)
 	Mat alpha, svidx;
 	double rho = svm->getDecisionFunction(0, alpha, svidx);
 
-	CV_Assert(alpha.total() == 1 && svidx.total() == 1 && sv_total == 1);
+	/*
+				CV_Assert(alpha.total() == 1 && svidx.total() == 1 && sv_total == 1);
 	CV_Assert((alpha.type() == CV_64F && alpha.at<double>(0) == 1.) ||
 		(alpha.type() == CV_32F && alpha.at<float>(0) == 1.f));
 	CV_Assert(sv.type() == CV_32F);
+	*/
+
 	hog_detector.clear();
 
 	hog_detector.resize(sv.cols + 1);
@@ -77,16 +80,33 @@ void config_detector(HOGDescriptor & detector, Ptr<SVM> & pSvm, const Size & win
 	detector.setSVMDetector(hog_detector);
 }
 
-
-void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations)
+/*
+* Use configed detector to detect targets in img, results will be put in locations.
+* detector: configed HOGDescriptor
+* img: source image
+* locations: detection results
+* useNMS: using NMS after detection
+*/
+void detect(HOGDescriptor & detector, const Mat & img, vector< Rect > & locations, bool useNMS,
+	const Size & win_stride, const Size & padding, double scale)
 {
 	vector < Rect > origin_locations;
 	//use hog + svm to detect
-	detector.detectMultiScale(img, origin_locations);
-	//filter overlap detections
-	non_max_suppression(origin_locations, locations);
+	detector.detectMultiScale(img, origin_locations, 0, win_stride, padding, scale);
+	if (useNMS)
+	{
+		//filter overlap detections
+		non_max_suppression(origin_locations, locations);
+	}
+	else
+	{
+		locations.assign(origin_locations.begin(), origin_locations.end());
+	}
 }
 
+/*
+* build a HOGDescripter detector from svm file with parameters.
+*/
 void build_hog_detector_from_svm(HOGDescriptor & detector, const string & svm_file_path,
 	const Size & win_size, const Size & block_size, const Size & cell_size, const Size & block_stride, int bins)
 {
