@@ -8,6 +8,8 @@ Multi-threaded data loader
 ------------------------------------------------------------------------------]]
 
 local Threads = require 'threads'
+----- add by HZP
+-- To understand serialization, access the link: https://github.com/torch/threads#library.
 Threads.serialization('threads.sharedserialize')
 
 local M = {}
@@ -26,6 +28,8 @@ end
 
 --------------------------------------------------------------------------------
 -- function: init
+----- add by HZP
+--split will be 'train' or 'val'
 function DataLoader:__init(config, split)
   local function main(idx)
     torch.setdefaulttensortype('torch.FloatTensor')
@@ -37,6 +41,8 @@ function DataLoader:__init(config, split)
     return _G.ds:size()
   end
 
+----- add by HZP
+-- Threads() equals to Threads.Threads()
   local threads, sizes = Threads(config.nthreads, main)
   self.threads = threads
   self.__size = sizes[1][1]

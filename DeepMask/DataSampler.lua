@@ -113,6 +113,8 @@ function DataSampler:get(headSampling)
     input,label = self:scoreSampling()
   end
 
+----- add by HZP
+-- torch.uniform: returns a random real number on [a, b). By default a is 0 and b is 1.
   if torch.uniform() > .5 then
     input = image.hflip(input)
     if headSampling == 1 then label = image.hflip(label) end
@@ -129,6 +131,8 @@ end
 function DataSampler:maskSampling()
   local iSz,wSz,gSz = self.iSz,self.wSz,self.gSz
 
+----- add by HZP
+-- ann is nil in the beginning.
   local cat,ann = torch.random(80)
   while not ann or ann.iscrowd == 1 or ann.area < 100 or ann.bbox[3] < 5
     or ann.bbox[4] < 5 do
